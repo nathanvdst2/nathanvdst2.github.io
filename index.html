@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Hébergeur d'Images</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .upload-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-zone:hover {
+            border-color: #764ba2;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .upload-zone.dragover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon { font-size: 4em; margin-bottom: 20px; }
+        .upload-text { font-size: 1.3em; color: #333; margin-bottom: 10px; }
+        .upload-subtext { color: #666; }
+        
+        #fileInput { display: none; }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+        
+        .results { margin-top: 30px; }
+        
+        .image-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .image-info {
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .link-section {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .link-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .link-input {
+            width: calc(100% - 90px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+            background: #f8f9fa;
+            margin-right: 10px;
+        }
+        
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .copy-btn:hover { background: #218838; }
+        
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 20px; margin: 10px; }
+            .upload-zone { padding: 40px 15px; }
+            .link-input { width: calc(100% - 80px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📸 Mon ImageHost</div>
+            <div style="color: #666; font-size: 1.1em;">Hébergement d'images gratuit et rapide</div>
+        </div>
+
+        <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Glissez vos images ici</div>
+            <div class="upload-subtext">ou cliquez pour sélectionner des fichiers</div>
+            <div class="upload-subtext">JPG, PNG, GIF, WEBP • Max: 10MB par image</div>
+        </div>
+        
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        
+        <div id="loading" class="loading">
+            <div>⏳ Upload en cours...</div>
+        </div>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        // ⚠️ IMPORTANT : Remplacer cette URL par celle de votre backend Railway
+        const API_URL = 'https://votre-app-backend.railway.app/api';
+        
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        
+        // Événements
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('dragleave', handleDragLeave);
+        uploadZone.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        }
+        
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) uploadFiles(files);
+        }
+        
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) uploadFiles(files);
+        }
+        
+        async function uploadFiles(files) {
+            loading.style.display = 'block';
+            clearMessages();
+            
+            const formData = new FormData();
+            files.forEach(file => {
+                if (file.size > 10 * 1024 * 1024) {
+                    showMessage(`❌ Fichier trop volumineux: ${file.name} (max 10MB)`, 'error');
+                    return;
+                }
+                formData.append('images', file);
+            });
+            
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data.images);
+                    showMessage('✅ Images uploadées avec succès!', 'success');
+                } else {
+                    showMessage('❌ Erreur: ' + (data.error || 'Erreur inconnue'), 'error');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur de connexion. Vérifiez que le backend fonctionne.', 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        function displayResults(images) {
+            images.forEach(image => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                
+                const htmlCode = `<img src="${image.url}" alt="Image" />`;
+                const bbCode = `[IMG]${image.url}[/IMG]`;
+                const markdownCode = `![Image](${image.url})`;
+                
+                card.innerHTML = `
+                    <img src="${image.url}" alt="Image uploadée" class="image-preview" loading="lazy">
+                    
+                    <div class="image-info">
+                        <strong>Taille:</strong> ${(image.size / 1024).toFixed(1)} KB | 
+                        <strong>Dimensions:</strong> ${image.width || '?'}x${image.height || '?'} |
+                        <strong>Format:</strong> ${image.format || 'JPG'}
+                    </div>
+                    
+                    <div class="link-section">
+                        <div class="link-title">🔗 Lien direct</div>
+                        <input type="text" class="link-input" value="${image.url}" readonly>
+                        <button class="copy-btn" onclick="copyToClipboard('${image.url}', this)">Copier</button>
+                    </div>
+                    
+                    <div class="link-section">
+                        <div class="link-title">🖼️ Code HTML</div>
+                        <input type="text" class="link-input" value='${htmlCode}' readonly>
+                        <button class="copy-btn" onclick="copyToClipboard('${htmlCode.replace(/'/g, "\\'")}', this)">Copier</button>
+                    </div>
+                    
+                    <div class="link-section">
+                        <div class="link-title">📝 BBCode</div>
+                        <input type="text" class="link-input" value="${bbCode}" readonly>
+                        <button class="copy-btn" onclick="copyToClipboard('${bbCode}', this)">Copier</button>
+                    </div>
+                    
+                    <div class="link-section">
+                        <div class="link-title">📋 Markdown</div>
+                        <input type="text" class="link-input" value="${markdownCode}" readonly>
+                        <button class="copy-btn" onclick="copyToClipboard('${markdownCode}', this)">Copier</button>
+                    </div>
+                `;
+                
+                results.appendChild(card);
+            });
+        }
+        
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✅ Copié!';
+                button.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '#28a745';
+                }, 2000);
+            }).catch(() => {
+                showMessage('❌ Erreur de copie', 'error');
+            });
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            results.insertBefore(messageDiv, results.firstChild);
+            
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        function clearMessages() {
+            const messages = results.querySelectorAll('.message');
+            messages.forEach(msg => msg.remove());
+        }
+        
+        // Empêcher le comportement par défaut du navigateur
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+    </script>
+</body>
+</html>
