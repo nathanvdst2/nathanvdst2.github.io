@@ -214,7 +214,7 @@
         }
         
         .link-input {
-            width: calc(100% - 100px);
+            width: calc(100% - 180px);
             padding: 12px;
             border: 2px solid #e9ecef;
             border-radius: 8px;
@@ -252,6 +252,23 @@
         
         .copy-btn.copied {
             background: linear-gradient(135deg, #007bff, #0056b3);
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #c82333, #bd2130);
+            transform: translateY(-1px);
         }
         
         .message {
@@ -313,28 +330,11 @@
             opacity: 0.9;
         }
         
-        .delete-btn {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8em;
-            margin-left: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .delete-btn:hover {
-            background: linear-gradient(135deg, #c82333, #bd2130);
-            transform: translateY(-1px);
-        }
-        
         @media (max-width: 768px) {
             .container { padding: 25px; margin: 10px; }
             .upload-zone { padding: 40px 15px; }
             .link-input { width: 100%; margin-bottom: 10px; }
-            .copy-btn { width: 100%; }
+            .copy-btn, .delete-btn { width: 100%; margin-left: 0; margin-bottom: 5px; }
             .image-info { grid-template-columns: 1fr; }
         }
     </style>
@@ -344,7 +344,7 @@
         <div class="header">
             <div class="logo">📸 Nathan's ImageHost</div>
             <div class="subtitle">Hébergement d'images ultra-simple</div>
-            <div class="simple-badge">✨ Nouvelle Version Simplifiée</div>
+            <div class="simple-badge">✨ Lien Direct Uniquement</div>
         </div>
 
         <div class="stats">
@@ -518,15 +518,12 @@
             });
         }
         
-        // Affichage des résultats
+        // Affichage des résultats - SEULEMENT LE LIEN DIRECT !
         function displayResult(image) {
             const card = document.createElement('div');
             card.className = 'image-card';
             
             const sizeKB = (image.size / 1024).toFixed(1);
-            const htmlCode = `&lt;img src="${image.url}" alt="${image.originalName}" /&gt;`;
-            const bbCode = `[IMG]${image.url}[/IMG]`;
-            const markdownCode = `![${image.originalName}](${image.url})`;
             
             card.innerHTML = `
                 <img src="${image.url}" alt="${image.originalName}" class="image-preview" 
@@ -552,28 +549,10 @@
                 </div>
                 
                 <div class="link-section">
-                    <div class="link-title">🔗 Lien direct</div>
+                    <div class="link-title">🔗 Lien direct de l'image</div>
                     <input type="text" class="link-input" value="${image.url}" readonly>
                     <button class="copy-btn" onclick="copyToClipboard('${image.url}', this)">Copier</button>
-                </div>
-                
-                <div class="link-section">
-                    <div class="link-title">🖼️ Code HTML</div>
-                    <input type="text" class="link-input" value="${htmlCode}" readonly>
-                    <button class="copy-btn" onclick="copyToClipboard('${htmlCode.replace(/'/g, "\\'")}', this)">Copier</button>
-                </div>
-                
-                <div class="link-section">
-                    <div class="link-title">📝 BBCode</div>
-                    <input type="text" class="link-input" value="${bbCode}" readonly>
-                    <button class="copy-btn" onclick="copyToClipboard('${bbCode}', this)">Copier</button>
-                </div>
-                
-                <div class="link-section">
-                    <div class="link-title">📋 Markdown</div>
-                    <input type="text" class="link-input" value="${markdownCode}" readonly>
-                    <button class="copy-btn" onclick="copyToClipboard('${markdownCode}', this)">Copier</button>
-                    <button class="delete-btn" onclick="deleteImage('${image.deleteUrl}', this)" title="Supprimer l'image">🗑️</button>
+                    <button class="delete-btn" onclick="deleteImage('${image.deleteUrl}', this)" title="Supprimer l'image">🗑️ Supprimer</button>
                 </div>
             `;
             
@@ -582,10 +561,7 @@
         
         // Copie dans le presse-papiers
         function copyToClipboard(text, button) {
-            // Décoder les entités HTML pour la copie
-            const decodedText = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
-            
-            navigator.clipboard.writeText(decodedText).then(() => {
+            navigator.clipboard.writeText(text).then(() => {
                 const originalText = button.textContent;
                 const originalClass = button.className;
                 
@@ -651,7 +627,7 @@
         
         // Message de bienvenue
         setTimeout(() => {
-            showMessage('🎉 Version simplifiée chargée ! Plus de backend complexe nécessaire.', 'success');
+            showMessage('🎉 Version simplifiée chargée ! Seul le lien direct sera généré.', 'success');
         }, 1000);
     </script>
 </body>
