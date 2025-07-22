@@ -525,6 +525,12 @@
             
             const sizeKB = (image.size / 1024).toFixed(1);
             
+            // Vérifier si on a une URL de suppression valide
+            const hasDeleteUrl = image.deleteUrl && image.deleteUrl.trim() !== '';
+            const deleteButton = hasDeleteUrl ? 
+                `<button class="delete-btn" onclick="deleteImage('${image.deleteUrl}', this)" title="Supprimer l'image">🗑️ Supprimer</button>` : 
+                '';
+            
             card.innerHTML = `
                 <img src="${image.url}" alt="${image.originalName}" class="image-preview" 
                      onclick="window.open('${image.url}', '_blank')" title="Cliquer pour agrandir">
@@ -552,7 +558,7 @@
                     <div class="link-title">🔗 Lien direct de l'image</div>
                     <input type="text" class="link-input" value="${image.url}" readonly>
                     <button class="copy-btn" onclick="copyToClipboard('${image.url}', this)">Copier</button>
-                    <button class="delete-btn" onclick="deleteImage('${image.deleteUrl}', this)" title="Supprimer l'image">🗑️ Supprimer</button>
+                    ${deleteButton}
                 </div>
             `;
             
@@ -579,14 +585,23 @@
         
         // Suppression d'image
         function deleteImage(deleteUrl, button) {
+            if (!deleteUrl || deleteUrl.trim() === '') {
+                showMessage('❌ Impossible de supprimer cette image', 'error');
+                return;
+            }
+            
             if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
                 fetch(deleteUrl, { method: 'GET' })
-                    .then(() => {
-                        button.closest('.image-card').remove();
-                        showMessage('🗑️ Image supprimée', 'success');
+                    .then(response => {
+                        if (response.ok) {
+                            button.closest('.image-card').remove();
+                            showMessage('🗑️ Image supprimée avec succès', 'success');
+                        } else {
+                            throw new Error('Erreur serveur');
+                        }
                     })
                     .catch(() => {
-                        showMessage('❌ Erreur suppression', 'error');
+                        showMessage('❌ Impossible de supprimer l\'image depuis le serveur', 'error');
                     });
             }
         }
@@ -625,10 +640,7 @@
             }, false);
         });
         
-        // Message de bienvenue
-        setTimeout(() => {
-            showMessage('🎉 Version simplifiée chargée ! Seul le lien direct sera généré.', 'success');
-        }, 1000);
+        // Pas de message de bienvenue automatique
     </script>
 </body>
 </html>
