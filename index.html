@@ -3,54 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nathan's ImageHost - Simple</title>
+    <title>Nathan's ImageHost - Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #333;
+            --text-secondary: #666;
+            --border-color: #dee2e6;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-card: #333;
+            --text-primary: #fff;
+            --text-secondary: #ccc;
+            --border-color: #555;
+            --shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             min-height: 100vh;
             padding: 20px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
+            background: var(--bg-card);
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
         }
         
         .header {
             text-align: center;
             margin-bottom: 40px;
+            position: relative;
         }
         
         .logo {
             font-size: 2.5em;
             font-weight: bold;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--primary-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 10px;
         }
         
         .subtitle {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 1.1em;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
-        .simple-badge {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 5px 15px;
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            border: none;
             border-radius: 20px;
+            cursor: pointer;
             font-size: 0.9em;
             font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle {
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            color: #333;
+        }
+        
+        .history-btn {
+            background: linear-gradient(135deg, #17a2b8, #007bff);
+            color: white;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         
         .upload-zone {
@@ -62,6 +116,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            background: var(--bg-secondary);
         }
         
         .upload-zone:hover {
@@ -71,7 +126,7 @@
         }
         
         .upload-zone.dragover {
-            border-color: #28a745;
+            border-color: var(--success-color);
             background: rgba(40, 167, 69, 0.1);
             transform: scale(1.02);
         }
@@ -93,26 +148,35 @@
         
         .upload-text { 
             font-size: 1.3em; 
-            color: #333; 
+            color: var(--text-primary); 
             margin-bottom: 15px; 
         }
         
         .upload-subtext { 
-            color: #666; 
-            margin-bottom: 5px;
+            color: var(--text-secondary); 
+            margin-bottom: 15px;
         }
         
-        .upload-limits {
-            color: #999;
+        .upload-features {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
             font-size: 0.9em;
-            margin-top: 10px;
+            color: var(--text-secondary);
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         #fileInput { display: none; }
         
         .progress {
             display: none;
-            background: #e9ecef;
+            background: var(--bg-secondary);
             border-radius: 10px;
             height: 20px;
             margin: 20px 0;
@@ -120,7 +184,7 @@
         }
         
         .progress-bar {
-            background: linear-gradient(90deg, #667eea, #764ba2);
+            background: var(--primary-gradient);
             height: 100%;
             width: 0%;
             transition: width 0.3s ease;
@@ -141,12 +205,13 @@
         .results { margin-top: 30px; }
         
         .image-card {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            background: var(--bg-secondary);
             border-radius: 15px;
             padding: 25px;
             margin-bottom: 25px;
-            border: 1px solid #dee2e6;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            position: relative;
         }
         
         .image-card:hover {
@@ -174,10 +239,10 @@
             gap: 10px;
             margin-bottom: 20px;
             padding: 15px;
-            background: white;
+            background: var(--bg-card);
             border-radius: 10px;
             font-size: 0.9em;
-            color: #666;
+            color: var(--text-secondary);
         }
         
         .info-item {
@@ -187,16 +252,16 @@
         
         .info-label {
             font-weight: bold;
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 2px;
         }
         
         .link-section {
-            background: white;
+            background: var(--bg-card);
             border-radius: 12px;
             padding: 18px;
             margin-bottom: 15px;
-            border: 1px solid #e3e6ea;
+            border: 1px solid var(--border-color);
             transition: border-color 0.3s ease;
         }
         
@@ -207,19 +272,20 @@
         .link-title {
             font-weight: bold;
             margin-bottom: 12px;
-            color: #333;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 8px;
         }
         
         .link-input {
-            width: calc(100% - 180px);
+            width: calc(100% - 200px);
             padding: 12px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 0.9em;
-            background: #f8f9fa;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
             margin-right: 10px;
             font-family: 'Courier New', monospace;
             transition: border-color 0.3s ease;
@@ -231,7 +297,7 @@
         }
         
         .copy-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, var(--success-color), #20c997);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -254,8 +320,25 @@
             background: linear-gradient(135deg, #007bff, #0056b3);
         }
         
+        .auto-copy-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--success-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            animation: fadeInOut 2s ease;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+        
         .delete-btn {
-            background: linear-gradient(135deg, #dc3545, #c82333);
+            background: linear-gradient(135deg, var(--error-color), #c82333);
             color: white;
             border: none;
             padding: 12px 15px;
@@ -330,12 +413,92 @@
             opacity: 0.9;
         }
         
+        .history-panel {
+            display: none;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .history-panel.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .history-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .history-thumb {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-name {
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+        
+        .history-meta {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+        
+        .paste-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
         @media (max-width: 768px) {
             .container { padding: 25px; margin: 10px; }
             .upload-zone { padding: 40px 15px; }
             .link-input { width: 100%; margin-bottom: 10px; }
             .copy-btn, .delete-btn { width: 100%; margin-left: 0; margin-bottom: 5px; }
             .image-info { grid-template-columns: 1fr; }
+            .upload-features { flex-direction: column; gap: 10px; }
+            .header-controls { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -343,8 +506,13 @@
     <div class="container">
         <div class="header">
             <div class="logo">📸 Nathan's ImageHost</div>
-            <div class="subtitle">Hébergement d'images ultra-simple</div>
-            <div class="simple-badge">✨ Lien Direct Uniquement</div>
+            <div class="subtitle">Hébergement d'images ultra-rapide</div>
+            
+            <div class="header-controls">
+                <button class="control-btn theme-toggle" onclick="toggleTheme()">🌙 Mode Sombre</button>
+                <button class="control-btn history-btn" onclick="toggleHistory()">📚 Historique (0)</button>
+                <button class="control-btn clear-btn" onclick="clearHistory()">🗑️ Effacer</button>
+            </div>
         </div>
 
         <div class="stats">
@@ -360,13 +528,45 @@
                 <span class="stat-number" id="successRate">100%</span>
                 <span class="stat-label">Succès</span>
             </div>
+            <div class="stat-item">
+                <span class="stat-number" id="todayCount">0</span>
+                <span class="stat-label">Aujourd'hui</span>
+            </div>
+        </div>
+
+        <div class="history-panel" id="historyPanel">
+            <div class="history-header">
+                <h3>📚 Historique des uploads</h3>
+                <button class="control-btn" onclick="exportHistory()">📤 Exporter</button>
+            </div>
+            <div id="historyList">
+                <p style="text-align: center; color: var(--text-secondary);">Aucune image dans l'historique</p>
+            </div>
         </div>
 
         <div class="upload-zone" id="uploadZone">
             <div class="upload-icon">🖼️</div>
             <div class="upload-text">Glissez vos images ici</div>
-            <div class="upload-subtext">ou cliquez pour sélectionner des fichiers</div>
-            <div class="upload-limits">JPG, PNG, GIF, WEBP • Max: 32MB par image • Illimité !</div>
+            <div class="upload-subtext">ou cliquez pour sélectionner • <strong>Ctrl+V</strong> pour coller</div>
+            
+            <div class="upload-features">
+                <div class="feature">
+                    <span>📁</span>
+                    <span>Drag & Drop</span>
+                </div>
+                <div class="feature">
+                    <span>📋</span>
+                    <span>Coller (Ctrl+V)</span>
+                </div>
+                <div class="feature">
+                    <span>🚀</span>
+                    <span>Auto-copie</span>
+                </div>
+                <div class="feature">
+                    <span>🌙</span>
+                    <span>Mode sombre</span>
+                </div>
+            </div>
         </div>
         
         <input type="file" id="fileInput" accept="image/*" multiple>
@@ -384,12 +584,23 @@
         // ⚠️ REMPLACEZ CETTE CLÉ PAR VOTRE VRAIE CLÉ IMGBB
         const IMGBB_API_KEY = '083e98d54e219818e448583563921c66';
         
+        // Configuration
+        const config = {
+            autoCopy: true,
+            maxHistoryItems: 100,
+            theme: localStorage.getItem('imagehost-theme') || 'light'
+        };
+        
         // Statistiques
         let stats = {
             total: 0,
             totalSize: 0,
-            successes: 0
+            successes: 0,
+            today: 0
         };
+        
+        // Historique local
+        let imageHistory = JSON.parse(localStorage.getItem('imagehost-history') || '[]');
         
         // Éléments DOM
         const uploadZone = document.getElementById('uploadZone');
@@ -398,6 +609,151 @@
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
         const results = document.getElementById('results');
+        const historyPanel = document.getElementById('historyPanel');
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme();
+            updateStats();
+            updateHistoryButton();
+            
+            // Raccourcis clavier
+            document.addEventListener('keydown', handleKeyboard);
+            document.addEventListener('paste', handlePaste);
+        });
+        
+        // Gestion du thème
+        function toggleTheme() {
+            config.theme = config.theme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('imagehost-theme', config.theme);
+            applyTheme();
+        }
+        
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', config.theme);
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = config.theme === 'light' ? '🌙 Mode Sombre' : '☀️ Mode Clair';
+        }
+        
+        // Gestion de l'historique
+        function toggleHistory() {
+            historyPanel.classList.toggle('show');
+            if (historyPanel.classList.contains('show')) {
+                renderHistory();
+            }
+        }
+        
+        function addToHistory(image) {
+            const historyItem = {
+                ...image,
+                timestamp: Date.now(),
+                date: new Date().toLocaleDateString('fr-FR')
+            };
+            
+            imageHistory.unshift(historyItem);
+            
+            // Limiter l'historique
+            if (imageHistory.length > config.maxHistoryItems) {
+                imageHistory = imageHistory.slice(0, config.maxHistoryItems);
+            }
+            
+            localStorage.setItem('imagehost-history', JSON.stringify(imageHistory));
+            updateHistoryButton();
+        }
+        
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (imageHistory.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Aucune image dans l\'historique</p>';
+                return;
+            }
+            
+            historyList.innerHTML = imageHistory.map(item => `
+                <div class="history-item">
+                    <img src="${item.url}" alt="${item.originalName}" class="history-thumb" onclick="window.open('${item.url}', '_blank')">
+                    <div class="history-info">
+                        <div class="history-name">${item.originalName}</div>
+                        <div class="history-meta">${item.date} • ${(item.size / 1024).toFixed(1)} KB</div>
+                    </div>
+                    <button class="copy-btn" onclick="copyToClipboard('${item.url}', this)" style="padding: 8px 12px; font-size: 0.8em;">Copier</button>
+                </div>
+            `).join('');
+        }
+        
+        function updateHistoryButton() {
+            const btn = document.querySelector('.history-btn');
+            btn.textContent = `📚 Historique (${imageHistory.length})`;
+        }
+        
+        function clearHistory() {
+            if (confirm('Effacer tout l\'historique ?')) {
+                imageHistory = [];
+                localStorage.removeItem('imagehost-history');
+                updateHistoryButton();
+                renderHistory();
+                showMessage('🗑️ Historique effacé', 'success');
+            }
+        }
+        
+        function exportHistory() {
+            if (imageHistory.length === 0) {
+                showMessage('❌ Aucune image à exporter', 'error');
+                return;
+            }
+            
+            const csvContent = 'data:text/csv;charset=utf-8,Nom,URL,Taille,Date\n' + 
+                imageHistory.map(item => 
+                    `"${item.originalName}","${item.url}","${(item.size / 1024).toFixed(1)} KB","${item.date}"`
+                ).join('\n');
+            
+            const link = document.createElement('a');
+            link.setAttribute('href', encodeURI(csvContent));
+            link.setAttribute('download', `imagehost-history-${new Date().toISOString().split('T')[0]}.csv`);
+            link.click();
+            
+            showMessage('📤 Historique exporté', 'success');
+        }
+        
+        // Gestion du collage
+        function handlePaste(e) {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            
+            for (let item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    
+                    showPasteIndicator();
+                    
+                    const file = item.getAsFile();
+                    if (file) {
+                        uploadFiles([file]);
+                    }
+                    break;
+                }
+            }
+        }
+        
+        function showPasteIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'paste-indicator';
+            indicator.textContent = '📋 Image collée !';
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                indicator.remove();
+            }, 2000);
+        }
+        
+        // Raccourcis clavier
+        function handleKeyboard(e) {
+            if (e.ctrlKey && e.key === 'v') {
+                // Géré par handlePaste
+            } else if (e.key === 'Escape') {
+                historyPanel.classList.remove('show');
+            }
+        }
         
         // Événements
         uploadZone.addEventListener('click', () => fileInput.click());
@@ -429,7 +785,7 @@
             if (files.length > 0) uploadFiles(files);
         }
         
-        // Upload principal - ULTRA SIMPLE !
+        // Upload principal
         async function uploadFiles(files) {
             if (IMGBB_API_KEY === 'VOTRE_CLE_IMGBB_ICI') {
                 showMessage('⚠️ Veuillez configurer votre clé API ImgBB dans le code', 'warning');
@@ -454,9 +810,9 @@
                     // Conversion en Base64
                     const base64 = await fileToBase64(file);
                     
-                    // Upload vers ImgBB - UNE SEULE REQUÊTE !
+                    // Upload vers ImgBB
                     const formData = new FormData();
-                    formData.append('image', base64.split(',')[1]); // Enlever le préfixe data:image/...
+                    formData.append('image', base64.split(',')[1]);
                     formData.append('name', file.name);
                     
                     const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
@@ -467,7 +823,7 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        displayResult({
+                        const imageData = {
                             url: data.data.url,
                             deleteUrl: data.data.delete_url,
                             filename: file.name,
@@ -475,10 +831,20 @@
                             width: data.data.width,
                             height: data.data.height,
                             originalName: file.name
-                        });
+                        };
+                        
+                        displayResult(imageData);
+                        addToHistory(imageData);
+                        
+                        // Auto-copie
+                        if (config.autoCopy) {
+                            copyToClipboard(imageData.url);
+                            showAutoCopyIndicator();
+                        }
                         
                         stats.successes++;
                         stats.totalSize += file.size;
+                        stats.today++;
                         
                         showMessage(`✅ ${file.name} uploadé avec succès !`, 'success');
                     } else {
@@ -508,6 +874,17 @@
             updateStats();
         }
         
+        function showAutoCopyIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'auto-copy-indicator';
+            indicator.textContent = '📋 Copié !';
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                indicator.remove();
+            }, 2000);
+        }
+        
         // Conversion fichier vers Base64
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -518,7 +895,7 @@
             });
         }
         
-        // Affichage des résultats - SEULEMENT LE LIEN DIRECT !
+        // Affichage des résultats
         function displayResult(image) {
             const card = document.createElement('div');
             card.className = 'image-card';
@@ -550,7 +927,7 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">⏰ Statut</span>
-                        <span style="color: #28a745; font-weight: bold;">✅ En ligne</span>
+                        <span style="color: var(--success-color); font-weight: bold;">✅ En ligne</span>
                     </div>
                 </div>
                 
@@ -566,18 +943,20 @@
         }
         
         // Copie dans le presse-papiers
-        function copyToClipboard(text, button) {
+        function copyToClipboard(text, button = null) {
             navigator.clipboard.writeText(text).then(() => {
-                const originalText = button.textContent;
-                const originalClass = button.className;
-                
-                button.textContent = '✅ Copié !';
-                button.classList.add('copied');
-                
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.className = originalClass;
-                }, 2000);
+                if (button) {
+                    const originalText = button.textContent;
+                    const originalClass = button.className;
+                    
+                    button.textContent = '✅ Copié !';
+                    button.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                        button.className = originalClass;
+                    }, 2000);
+                }
             }).catch(() => {
                 showMessage('❌ Erreur de copie', 'error');
             });
@@ -630,6 +1009,7 @@
             document.getElementById('totalImages').textContent = stats.total;
             document.getElementById('totalSize').textContent = (stats.totalSize / 1024 / 1024).toFixed(1) + ' MB';
             document.getElementById('successRate').textContent = stats.total ? Math.round((stats.successes / stats.total) * 100) + '%' : '100%';
+            document.getElementById('todayCount').textContent = stats.today;
         }
         
         // Empêcher le comportement par défaut
@@ -639,8 +1019,6 @@
                 e.stopPropagation();
             }, false);
         });
-        
-        // Pas de message de bienvenue automatique
     </script>
 </body>
 </html>
