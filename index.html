@@ -386,6 +386,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+        
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -962,25 +967,7 @@
             });
         }
         
-        // Suppression d'image
-        function deleteImage(deleteUrl, button) {
-            if (!deleteUrl || deleteUrl.trim() === '') {
-                showMessage('❌ Impossible de supprimer cette image', 'error');
-                return;
-            }
-            
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
-                fetch(deleteUrl, { method: 'GET' })
-                    .then(response => {
-                        if (response.ok) {
-                            button.closest('.image-card').remove();
-                            showMessage('🗑️ Image supprimée avec succès', 'success');
-                        } else {
-                            throw new Error('Erreur serveur');
-                        }
-                    })
-                    .catch(() => {
-                        showMessage('❌ Impossible de supprimer l\'image depuis le serveur', 'error');
+ Impossible de supprimer l\'image depuis le serveur', 'error');
                     });
             }
         }
