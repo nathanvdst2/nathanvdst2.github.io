@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Hébergeur d'Images</title>
+    <title>Nathan's ImageHost - Simple</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -37,6 +37,22 @@
             margin-bottom: 10px;
         }
         
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .simple-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
         .upload-zone {
             border: 3px dashed #667eea;
             border-radius: 15px;
@@ -45,11 +61,13 @@
             margin-bottom: 30px;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
         }
         
         .upload-zone:hover {
             border-color: #764ba2;
             background: rgba(102, 126, 234, 0.05);
+            transform: translateY(-2px);
         }
         
         .upload-zone.dragover {
@@ -58,136 +76,327 @@
             transform: scale(1.02);
         }
         
-        .upload-icon { font-size: 4em; margin-bottom: 20px; }
-        .upload-text { font-size: 1.3em; color: #333; margin-bottom: 10px; }
-        .upload-subtext { color: #666; }
+        .upload-zone.uploading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .upload-icon { 
+            font-size: 4em; 
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .upload-zone:hover .upload-icon {
+            transform: scale(1.1);
+        }
+        
+        .upload-text { 
+            font-size: 1.3em; 
+            color: #333; 
+            margin-bottom: 15px; 
+        }
+        
+        .upload-subtext { 
+            color: #666; 
+            margin-bottom: 5px;
+        }
+        
+        .upload-limits {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
         
         #fileInput { display: none; }
         
-        .loading {
+        .progress {
             display: none;
-            text-align: center;
-            padding: 20px;
-            color: #667eea;
-            font-size: 1.2em;
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
         }
         
         .results { margin-top: 30px; }
         
         .image-card {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #e9ecef;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid #dee2e6;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
         
         .image-preview {
             max-width: 100%;
             max-height: 300px;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-preview:hover {
+            transform: scale(1.02);
         }
         
         .image-info {
-            margin-bottom: 15px;
-            color: #666;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
             font-size: 0.9em;
+            color: #666;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2px;
         }
         
         .link-section {
             background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            border: 1px solid #e3e6ea;
+            transition: border-color 0.3s ease;
+        }
+        
+        .link-section:hover {
+            border-color: #667eea;
         }
         
         .link-title {
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .link-input {
-            width: calc(100% - 90px);
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            width: calc(100% - 100px);
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
             font-size: 0.9em;
             background: #f8f9fa;
             margin-right: 10px;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.3s ease;
+        }
+        
+        .link-input:focus {
+            outline: none;
+            border-color: #667eea;
         }
         
         .copy-btn {
-            background: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.9em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
-        .copy-btn:hover { background: #218838; }
+        .copy-btn:hover {
+            background: linear-gradient(135deg, #218838, #1ea085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+        }
         
         .message {
-            padding: 15px;
-            border-radius: 5px;
+            padding: 15px 20px;
+            border-radius: 10px;
             margin: 15px 0;
             text-align: center;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
         }
         
         .success {
-            background: #d4edda;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
             color: #155724;
             border: 1px solid #c3e6cb;
         }
         
         .error {
-            background: #f8d7da;
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
         
+        .warning {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+        
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .delete-btn {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #c82333, #bd2130);
+            transform: translateY(-1px);
+        }
+        
         @media (max-width: 768px) {
-            .container { padding: 20px; margin: 10px; }
+            .container { padding: 25px; margin: 10px; }
             .upload-zone { padding: 40px 15px; }
-            .link-input { width: calc(100% - 80px); }
+            .link-input { width: 100%; margin-bottom: 10px; }
+            .copy-btn { width: 100%; }
+            .image-info { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">📸 Mon ImageHost</div>
-            <div style="color: #666; font-size: 1.1em;">Hébergement d'images gratuit et rapide</div>
+            <div class="logo">📸 Nathan's ImageHost</div>
+            <div class="subtitle">Hébergement d'images ultra-simple</div>
+            <div class="simple-badge">✨ Nouvelle Version Simplifiée</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="totalImages">0</span>
+                <span class="stat-label">Images</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="totalSize">0 MB</span>
+                <span class="stat-label">Taille</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="successRate">100%</span>
+                <span class="stat-label">Succès</span>
+            </div>
         </div>
 
         <div class="upload-zone" id="uploadZone">
-            <div class="upload-icon">📁</div>
+            <div class="upload-icon">🖼️</div>
             <div class="upload-text">Glissez vos images ici</div>
             <div class="upload-subtext">ou cliquez pour sélectionner des fichiers</div>
-            <div class="upload-subtext">JPG, PNG, GIF, WEBP • Max: 10MB par image</div>
+            <div class="upload-limits">JPG, PNG, GIF, WEBP • Max: 32MB par image • Illimité !</div>
         </div>
         
         <input type="file" id="fileInput" accept="image/*" multiple>
         
-        <div id="loading" class="loading">
-            <div>⏳ Upload en cours...</div>
+        <div class="progress" id="progress">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-text" id="progressText">0%</div>
+            </div>
         </div>
         
         <div id="results" class="results"></div>
     </div>
 
     <script>
-        // ⚠️ IMPORTANT : Remplacer cette URL par celle de votre backend Railway
-        const API_URL = 'https://imagehost-backend.onrender.com/api';
+        // ⚠️ REMPLACEZ CETTE CLÉ PAR VOTRE VRAIE CLÉ IMGBB
+        const IMGBB_API_KEY = '083e98d54e219818e448583563921c66';
         
+        // Statistiques
+        let stats = {
+            total: 0,
+            totalSize: 0,
+            successes: 0
+        };
+        
+        // Éléments DOM
         const uploadZone = document.getElementById('uploadZone');
         const fileInput = document.getElementById('fileInput');
-        const loading = document.getElementById('loading');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
         const results = document.getElementById('results');
         
         // Événements
@@ -197,6 +406,7 @@
         uploadZone.addEventListener('drop', handleDrop);
         fileInput.addEventListener('change', handleFileSelect);
         
+        // Gestion drag & drop
         function handleDragOver(e) {
             e.preventDefault();
             uploadZone.classList.add('dragover');
@@ -219,107 +429,193 @@
             if (files.length > 0) uploadFiles(files);
         }
         
+        // Upload principal - ULTRA SIMPLE !
         async function uploadFiles(files) {
-            loading.style.display = 'block';
+            if (IMGBB_API_KEY === 'VOTRE_CLE_IMGBB_ICI') {
+                showMessage('⚠️ Veuillez configurer votre clé API ImgBB dans le code', 'warning');
+                return;
+            }
+            
+            uploadZone.classList.add('uploading');
+            progress.style.display = 'block';
             clearMessages();
             
-            const formData = new FormData();
-            files.forEach(file => {
-                if (file.size > 10 * 1024 * 1024) {
-                    showMessage(`❌ Fichier trop volumineux: ${file.name} (max 10MB)`, 'error');
-                    return;
-                }
-                formData.append('images', file);
-            });
+            let completed = 0;
+            const total = files.length;
             
-            try {
-                const response = await fetch(`${API_URL}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+            for (const file of files) {
+                try {
+                    // Vérification taille
+                    if (file.size > 32 * 1024 * 1024) {
+                        showMessage(`❌ ${file.name} trop volumineux (max 32MB)`, 'error');
+                        continue;
+                    }
+                    
+                    // Conversion en Base64
+                    const base64 = await fileToBase64(file);
+                    
+                    // Upload vers ImgBB - UNE SEULE REQUÊTE !
+                    const formData = new FormData();
+                    formData.append('image', base64.split(',')[1]); // Enlever le préfixe data:image/...
+                    formData.append('name', file.name);
+                    
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        displayResult({
+                            url: data.data.url,
+                            deleteUrl: data.data.delete_url,
+                            filename: file.name,
+                            size: file.size,
+                            width: data.data.width,
+                            height: data.data.height,
+                            originalName: file.name
+                        });
+                        
+                        stats.successes++;
+                        stats.totalSize += file.size;
+                        
+                        showMessage(`✅ ${file.name} uploadé avec succès !`, 'success');
+                    } else {
+                        throw new Error(data.error?.message || 'Erreur upload');
+                    }
+                    
+                } catch (error) {
+                    console.error('Erreur upload:', error);
+                    showMessage(`❌ Erreur ${file.name}: ${error.message}`, 'error');
                 }
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    displayResults(data.images);
-                    showMessage('✅ Images uploadées avec succès!', 'success');
-                } else {
-                    showMessage('❌ Erreur: ' + (data.error || 'Erreur inconnue'), 'error');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                showMessage('❌ Erreur de connexion. Vérifiez que le backend fonctionne.', 'error');
-            } finally {
-                loading.style.display = 'none';
+                // Mise à jour progression
+                completed++;
+                const percent = Math.round((completed / total) * 100);
+                progressBar.style.width = percent + '%';
+                progressText.textContent = percent + '%';
             }
+            
+            // Nettoyage
+            setTimeout(() => {
+                progress.style.display = 'none';
+                uploadZone.classList.remove('uploading');
+                progressBar.style.width = '0%';
+            }, 1000);
+            
+            stats.total += files.length;
+            updateStats();
         }
         
-        function displayResults(images) {
-            images.forEach(image => {
-                const card = document.createElement('div');
-                card.className = 'image-card';
-                
-                const htmlCode = `<img src="${image.url}" alt="Image" />`;
-                const bbCode = `[IMG]${image.url}[/IMG]`;
-                const markdownCode = `![Image](${image.url})`;
-                
-                card.innerHTML = `
-                    <img src="${image.url}" alt="Image uploadée" class="image-preview" loading="lazy">
-                    
-                    <div class="image-info">
-                        <strong>Taille:</strong> ${(image.size / 1024).toFixed(1)} KB | 
-                        <strong>Dimensions:</strong> ${image.width || '?'}x${image.height || '?'} |
-                        <strong>Format:</strong> ${image.format || 'JPG'}
-                    </div>
-                    
-                    <div class="link-section">
-                        <div class="link-title">🔗 Lien direct</div>
-                        <input type="text" class="link-input" value="${image.url}" readonly>
-                        <button class="copy-btn" onclick="copyToClipboard('${image.url}', this)">Copier</button>
-                    </div>
-                    
-                    <div class="link-section">
-                        <div class="link-title">🖼️ Code HTML</div>
-                        <input type="text" class="link-input" value='${htmlCode}' readonly>
-                        <button class="copy-btn" onclick="copyToClipboard('${htmlCode.replace(/'/g, "\\'")}', this)">Copier</button>
-                    </div>
-                    
-                    <div class="link-section">
-                        <div class="link-title">📝 BBCode</div>
-                        <input type="text" class="link-input" value="${bbCode}" readonly>
-                        <button class="copy-btn" onclick="copyToClipboard('${bbCode}', this)">Copier</button>
-                    </div>
-                    
-                    <div class="link-section">
-                        <div class="link-title">📋 Markdown</div>
-                        <input type="text" class="link-input" value="${markdownCode}" readonly>
-                        <button class="copy-btn" onclick="copyToClipboard('${markdownCode}', this)">Copier</button>
-                    </div>
-                `;
-                
-                results.appendChild(card);
+        // Conversion fichier vers Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
             });
         }
         
+        // Affichage des résultats
+        function displayResult(image) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            
+            const sizeKB = (image.size / 1024).toFixed(1);
+            const htmlCode = `&lt;img src="${image.url}" alt="${image.originalName}" /&gt;`;
+            const bbCode = `[IMG]${image.url}[/IMG]`;
+            const markdownCode = `![${image.originalName}](${image.url})`;
+            
+            card.innerHTML = `
+                <img src="${image.url}" alt="${image.originalName}" class="image-preview" 
+                     onclick="window.open('${image.url}', '_blank')" title="Cliquer pour agrandir">
+                
+                <div class="image-info">
+                    <div class="info-item">
+                        <span class="info-label">📁 Nom</span>
+                        <span>${image.originalName}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📏 Taille</span>
+                        <span>${sizeKB} KB</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🖼️ Dimensions</span>
+                        <span>${image.width || '?'}×${image.height || '?'}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">⏰ Statut</span>
+                        <span style="color: #28a745; font-weight: bold;">✅ En ligne</span>
+                    </div>
+                </div>
+                
+                <div class="link-section">
+                    <div class="link-title">🔗 Lien direct</div>
+                    <input type="text" class="link-input" value="${image.url}" readonly>
+                    <button class="copy-btn" onclick="copyToClipboard('${image.url}', this)">Copier</button>
+                </div>
+                
+                <div class="link-section">
+                    <div class="link-title">🖼️ Code HTML</div>
+                    <input type="text" class="link-input" value="${htmlCode}" readonly>
+                    <button class="copy-btn" onclick="copyToClipboard('${htmlCode.replace(/'/g, "\\'")}', this)">Copier</button>
+                </div>
+                
+                <div class="link-section">
+                    <div class="link-title">📝 BBCode</div>
+                    <input type="text" class="link-input" value="${bbCode}" readonly>
+                    <button class="copy-btn" onclick="copyToClipboard('${bbCode}', this)">Copier</button>
+                </div>
+                
+                <div class="link-section">
+                    <div class="link-title">📋 Markdown</div>
+                    <input type="text" class="link-input" value="${markdownCode}" readonly>
+                    <button class="copy-btn" onclick="copyToClipboard('${markdownCode}', this)">Copier</button>
+                    <button class="delete-btn" onclick="deleteImage('${image.deleteUrl}', this)" title="Supprimer l'image">🗑️</button>
+                </div>
+            `;
+            
+            results.insertBefore(card, results.firstChild);
+        }
+        
+        // Copie dans le presse-papiers
         function copyToClipboard(text, button) {
-            navigator.clipboard.writeText(text).then(() => {
+            // Décoder les entités HTML pour la copie
+            const decodedText = text.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
+            
+            navigator.clipboard.writeText(decodedText).then(() => {
                 const originalText = button.textContent;
-                button.textContent = '✅ Copié!';
-                button.style.background = '#28a745';
+                const originalClass = button.className;
+                
+                button.textContent = '✅ Copié !';
+                button.classList.add('copied');
                 
                 setTimeout(() => {
                     button.textContent = originalText;
-                    button.style.background = '#28a745';
+                    button.className = originalClass;
                 }, 2000);
             }).catch(() => {
                 showMessage('❌ Erreur de copie', 'error');
             });
         }
         
+        // Suppression d'image
+        function deleteImage(deleteUrl, button) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+                fetch(deleteUrl, { method: 'GET' })
+                    .then(() => {
+                        button.closest('.image-card').remove();
+                        showMessage('🗑️ Image supprimée', 'success');
+                    })
+                    .catch(() => {
+                        showMessage('❌ Erreur suppression', 'error');
+                    });
+            }
+        }
+        
+        // Messages
         function showMessage(message, type) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
@@ -338,13 +634,25 @@
             messages.forEach(msg => msg.remove());
         }
         
-        // Empêcher le comportement par défaut du navigateur
+        // Mise à jour des statistiques
+        function updateStats() {
+            document.getElementById('totalImages').textContent = stats.total;
+            document.getElementById('totalSize').textContent = (stats.totalSize / 1024 / 1024).toFixed(1) + ' MB';
+            document.getElementById('successRate').textContent = stats.total ? Math.round((stats.successes / stats.total) * 100) + '%' : '100%';
+        }
+        
+        // Empêcher le comportement par défaut
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             document.addEventListener(eventName, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
             }, false);
         });
+        
+        // Message de bienvenue
+        setTimeout(() => {
+            showMessage('🎉 Version simplifiée chargée ! Plus de backend complexe nécessaire.', 'success');
+        }, 1000);
     </script>
 </body>
 </html>
