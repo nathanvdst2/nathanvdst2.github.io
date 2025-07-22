@@ -279,7 +279,7 @@
         }
         
         .link-input {
-            width: calc(100% - 200px);
+            width: calc(100% - 120px);
             padding: 12px;
             border: 2px solid var(--border-color);
             border-radius: 8px;
@@ -335,23 +335,6 @@
         @keyframes fadeInOut {
             0%, 100% { opacity: 0; transform: scale(0.8); }
             50% { opacity: 1; transform: scale(1); }
-        }
-        
-        .delete-btn {
-            background: linear-gradient(135deg, var(--error-color), #c82333);
-            color: white;
-            border: none;
-            padding: 12px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin-left: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .delete-btn:hover {
-            background: linear-gradient(135deg, #c82333, #bd2130);
-            transform: translateY(-1px);
         }
         
         .message {
@@ -495,7 +478,7 @@
             .container { padding: 25px; margin: 10px; }
             .upload-zone { padding: 40px 15px; }
             .link-input { width: 100%; margin-bottom: 10px; }
-            .copy-btn, .delete-btn { width: 100%; margin-left: 0; margin-bottom: 5px; }
+            .copy-btn { width: 100%; margin-left: 0; margin-bottom: 5px; }
             .image-info { grid-template-columns: 1fr; }
             .upload-features { flex-direction: column; gap: 10px; }
             .header-controls { flex-wrap: wrap; }
@@ -527,10 +510,6 @@
             <div class="stat-item">
                 <span class="stat-number" id="successRate">100%</span>
                 <span class="stat-label">Succès</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="todayCount">0</span>
-                <span class="stat-label">Aujourd'hui</span>
             </div>
         </div>
 
@@ -595,8 +574,7 @@
         let stats = {
             total: 0,
             totalSize: 0,
-            successes: 0,
-            today: 0
+            successes: 0
         };
         
         // Historique local
@@ -844,7 +822,6 @@
                         
                         stats.successes++;
                         stats.totalSize += file.size;
-                        stats.today++;
                         
                         showMessage(`✅ ${file.name} uploadé avec succès !`, 'success');
                     } else {
@@ -902,12 +879,6 @@
             
             const sizeKB = (image.size / 1024).toFixed(1);
             
-            // Vérifier si on a une URL de suppression valide
-            const hasDeleteUrl = image.deleteUrl && image.deleteUrl.trim() !== '';
-            const deleteButton = hasDeleteUrl ? 
-                `<button class="delete-btn" onclick="deleteImage('${image.deleteUrl}', this)" title="Supprimer l'image">🗑️ Supprimer</button>` : 
-                '';
-            
             card.innerHTML = `
                 <img src="${image.url}" alt="${image.originalName}" class="image-preview" 
                      onclick="window.open('${image.url}', '_blank')" title="Cliquer pour agrandir">
@@ -935,7 +906,6 @@
                     <div class="link-title">🔗 Lien direct de l'image</div>
                     <input type="text" class="link-input" value="${image.url}" readonly>
                     <button class="copy-btn" onclick="copyToClipboard('${image.url}', this)">Copier</button>
-                    ${deleteButton}
                 </div>
             `;
             
@@ -962,29 +932,6 @@
             });
         }
         
-        // Suppression d'image
-        function deleteImage(deleteUrl, button) {
-            if (!deleteUrl || deleteUrl.trim() === '') {
-                showMessage('❌ Impossible de supprimer cette image', 'error');
-                return;
-            }
-            
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
-                fetch(deleteUrl, { method: 'GET' })
-                    .then(response => {
-                        if (response.ok) {
-                            button.closest('.image-card').remove();
-                            showMessage('🗑️ Image supprimée avec succès', 'success');
-                        } else {
-                            throw new Error('Erreur serveur');
-                        }
-                    })
-                    .catch(() => {
-                        showMessage('❌ Impossible de supprimer l\'image depuis le serveur', 'error');
-                    });
-            }
-        }
-        
         // Messages
         function showMessage(message, type) {
             const messageDiv = document.createElement('div');
@@ -1009,7 +956,6 @@
             document.getElementById('totalImages').textContent = stats.total;
             document.getElementById('totalSize').textContent = (stats.totalSize / 1024 / 1024).toFixed(1) + ' MB';
             document.getElementById('successRate').textContent = stats.total ? Math.round((stats.successes / stats.total) * 100) + '%' : '100%';
-            document.getElementById('todayCount').textContent = stats.today;
         }
         
         // Empêcher le comportement par défaut
